@@ -43,6 +43,6 @@ backend/model/processed/
 backend/catboost_info/
 *.zip
 *.mat
-*.pkl
+# *.pkl  ← Model file ko allow karo Render ke liye
 *.db
 *.sqlite3

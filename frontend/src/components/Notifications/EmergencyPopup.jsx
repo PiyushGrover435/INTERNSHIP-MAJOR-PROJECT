@@ -5,6 +5,10 @@ import { AlertTriangle, X, Phone } from 'lucide-react';
 const EmergencyPopup = () => {
   const { emergencyActive, dismissEmergency, alerts, sensorData } = useApp();
 
+  // Load personalized numbers from settings or fallback to defaults
+  const caregiver1 = localStorage.getItem('caregiver1') || '+919350817601';
+  const caregiver2 = localStorage.getItem('caregiver2') || '+919518242600';
+
   // Auto-dismiss after 30 seconds
   useEffect(() => {
     if (!emergencyActive) return;
@@ -74,17 +78,17 @@ const EmergencyPopup = () => {
             {/* Actions */}
             <div className="flex flex-col gap-3">
               <div className="flex gap-3">
-                <a href="tel:+919350817601" className="flex-1 py-2.5 rounded-xl bg-cyber-danger/20 border border-cyber-danger/40 
+                <a href={`tel:${caregiver1}`} className="flex-1 py-2.5 rounded-xl bg-cyber-danger/20 border border-cyber-danger/40 
                   text-cyber-danger font-semibold text-xs hover:bg-cyber-danger/30 transition-all
                   flex items-center justify-center gap-1.5">
                   <Phone className="w-3.5 h-3.5" />
-                  Call 935081...
+                  Call {caregiver1.slice(0, 5)}...
                 </a>
-                <a href="tel:+919518242600" className="flex-1 py-2.5 rounded-xl bg-cyber-danger/20 border border-cyber-danger/40 
+                <a href={`tel:${caregiver2}`} className="flex-1 py-2.5 rounded-xl bg-cyber-danger/20 border border-cyber-danger/40 
                   text-cyber-danger font-semibold text-xs hover:bg-cyber-danger/30 transition-all
                   flex items-center justify-center gap-1.5">
                   <Phone className="w-3.5 h-3.5" />
-                  Call 951824...
+                  Call {caregiver2.slice(0, 5)}...
                 </a>
               </div>
               <button

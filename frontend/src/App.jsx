@@ -15,6 +15,7 @@ import Analytics from './pages/Analytics';
 import AIPrediction from './pages/AIPrediction';
 import AlertHistory from './pages/AlertHistory';
 import About from './pages/About';
+import Settings from './pages/Settings';
 import EEGSimulator from './pages/EEGSimulator';
 import PatientBehaviour from './pages/PatientBehaviour';
 import VoiceAssistant from './components/Assistant/VoiceAssistant';
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/patient-behaviour" element={<PatientBehaviour />} />
             <Route path="/alert-history" element={<AlertHistory />} />
             <Route path="/about" element={<About />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </Layout>
         <NotificationPanel />

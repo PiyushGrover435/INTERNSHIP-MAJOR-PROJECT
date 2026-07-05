@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import {
   LayoutDashboard, Activity, Brain, History,
-  Info, Home, X, Wifi, Cpu, AlertTriangle, BarChart2, Microscope, UserRound
+  Info, Home, X, Wifi, Cpu, AlertTriangle, BarChart2, Microscope, UserRound, Settings as SettingsIcon
 } from 'lucide-react';
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { path: '/patient-behaviour',  label: 'Patient Behaviour', icon: UserRound     },
   { path: '/alert-history',      label: 'Alert History',     icon: History       },
   { path: '/about',              label: 'About',             icon: Info          },
+  { path: '/settings',           label: 'Settings',          icon: SettingsIcon  },
 ];
 
 const Sidebar = () => {
