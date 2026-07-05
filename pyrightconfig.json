@@ -1,0 +1,10 @@
+{
+    "venvPath": "z:/internship Major Project/backend",
+    "venv": "venv",
+    "extraPaths": [
+        "backend",
+        "backend/model",
+        "backend/venv/Lib/site-packages"
+    ],
+    "reportMissingTypeStubs": false
+}

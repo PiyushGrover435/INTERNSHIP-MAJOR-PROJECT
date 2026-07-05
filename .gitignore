@@ -1,0 +1,48 @@
+# Environments
+.env
+.env.*
+!.env.example
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# macOS
+.DS_Store
+
+# Secret Keys and Credentials
+firebase_admin_sdk.json
+*.pem
+*.key
+
+# Large Datasets and Model Outputs
+backend/model/raw/
+backend/model/processed/
+backend/catboost_info/
+*.zip
+*.mat
+*.pkl
+*.db
+*.sqlite3
