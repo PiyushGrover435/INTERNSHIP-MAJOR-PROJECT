@@ -10,6 +10,7 @@ joblib>=1.4.2
 gunicorn>=22.0.0
 
 # ── ML Pipeline Dependencies ──────────────────────────────────────────────────
+catboost>=1.2.0           # CatBoost base learner (main ensemble model)
 lightgbm>=4.3.0          # LGBM base learner (stacking ensemble)
 xgboost>=2.0.0           # XGBoost base learner (stacking ensemble)
 optuna>=3.6.0            # Bayesian hyperparameter optimisation (TPESampler)

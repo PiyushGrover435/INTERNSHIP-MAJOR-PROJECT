@@ -47,14 +47,23 @@ except Exception as e:
     model, scaler, selector = None, None, None
     MODEL_LOADED = False
 
-# ── Firebase Admin SDK ──────────────────────────────────────────
+# ── Firebase Admin SDK ──────────────────────────────────────────────────────
 db = None
+import json, tempfile
 FIREBASE_SA_PATH = os.path.join(os.path.dirname(__file__), 'firebase_admin_sdk.json')
 FIREBASE_DB_URL = os.getenv('FIREBASE_DATABASE_URL', '')
+FIREBASE_CREDS_JSON = os.getenv('FIREBASE_CREDENTIALS_JSON', '')  # fallback for Render
 
 try:
     import firebase_admin
     from firebase_admin import credentials, db as firebase_db
+
+    # If JSON file missing but env var present, write it to a temp file
+    if not os.path.exists(FIREBASE_SA_PATH) and FIREBASE_CREDS_JSON:
+        tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+        tmp.write(FIREBASE_CREDS_JSON)
+        tmp.flush()
+        FIREBASE_SA_PATH = tmp.name
 
     if os.path.exists(FIREBASE_SA_PATH) and FIREBASE_DB_URL:
         cred = credentials.Certificate(FIREBASE_SA_PATH)
