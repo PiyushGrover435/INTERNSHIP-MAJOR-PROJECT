@@ -8,8 +8,8 @@ const Settings = () => {
 
   useEffect(() => {
     // Load from localStorage on mount
-    const cg1 = localStorage.getItem('caregiver1') || '+919350817601';
-    const cg2 = localStorage.getItem('caregiver2') || '+919518242600';
+    const cg1 = localStorage.getItem('caregiver1') || '+919999999999';
+    const cg2 = localStorage.getItem('caregiver2') || '+918888888888';
     setCaregiver1(cg1);
     setCaregiver2(cg2);
   }, []);

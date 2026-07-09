@@ -33,7 +33,7 @@ const Sidebar = () => {
 
       <aside
         className={`fixed top-0 left-0 h-full w-64 z-50 sidebar-transition
-          glass-strong flex flex-col
+          glass-strong flex flex-col overflow-hidden
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:relative lg:z-auto`}
       >
@@ -66,7 +66,7 @@ const Sidebar = () => {
         </div>
 
         {/* Nav items */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 min-h-0 p-4 space-y-1 overflow-y-auto">
           {navItems.map(({ path, label, icon: Icon }) => (
             <NavLink
               key={path}

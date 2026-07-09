@@ -6,8 +6,8 @@ const EmergencyPopup = () => {
   const { emergencyActive, dismissEmergency, alerts, sensorData } = useApp();
 
   // Load personalized numbers from settings or fallback to defaults
-  const caregiver1 = localStorage.getItem('caregiver1') || '+919350817601';
-  const caregiver2 = localStorage.getItem('caregiver2') || '+919518242600';
+  const caregiver1 = localStorage.getItem('caregiver1') || '+919999999999';
+  const caregiver2 = localStorage.getItem('caregiver2') || '+918888888888';
 
   // Auto-dismiss after 30 seconds
   useEffect(() => {
