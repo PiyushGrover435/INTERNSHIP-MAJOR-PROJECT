@@ -47,8 +47,11 @@ Wokwi Simulator (Browser)
                         ▼
                 React.js Frontend (Dashboard)
                     ├── Clerk Auth (Sign In / Sign Up)
-                    ├── Voice Assistant (Web Speech API)
-                    └── 9 Pages
+                    ├── Voice Assistant (Web Speech API + Gemini AI)  [NEW]
+                    ├── Facial Emotion Recognition (face-api.js)       [NEW]
+                    ├── 3D Brain Visualisation (React Three Fiber)     [NEW]
+                    ├── Live Location Tracking (Google Maps API)       [NEW]
+                    └── 10 Pages
 ```
 
 ---
@@ -56,6 +59,7 @@ Wokwi Simulator (Browser)
 ## 🤖 AI Models Used
 
 ### 1. Stacking Ensemble — Main Stress Classifier
+
 The core AI model is a **2-level Stacking Ensemble** trained on the **WESAD (Wearable Stress and Affect Detection)** dataset — a real physiological dataset from wrist-worn sensors.
 
 **Level 0 — Base Learners:**
@@ -98,6 +102,7 @@ The core AI model is a **2-level Stacking Ensemble** trained on the **WESAD (Wea
 ---
 
 ### 2. Rule-Based EEG Cognitive Load Classifier
+
 A threshold-based classifier for EEG brainwave data, used in the **EEG Simulator** page.
 
 **EEG Band Thresholds:**
@@ -114,6 +119,7 @@ A threshold-based classifier for EEG brainwave data, used in the **EEG Simulator
 ---
 
 ### 3. Hybrid Hallucination Risk Engine
+
 A rule-based hybrid engine that combines:
 - AI stress risk output (from CatBoost model)
 - Historical **sleep quality data** (from SQLite)
@@ -122,6 +128,37 @@ A rule-based hybrid engine that combines:
 - Base probability from stress risk (LOW=10%, MEDIUM=35%, HIGH=65%)
 - **Sleep deprivation** is the primary amplifier — avg sleep quality < 40 triggers significant penalty
 - Output: Hallucination probability (0–100%) → LOW / MEDIUM / HIGH / CRITICAL
+
+---
+
+### 4. ✨ NEW — Facial Emotion Recognition (face-api.js)
+
+A **real-time, in-browser AI** facial emotion detection system powered by **face-api.js** (TensorFlow.js under the hood).
+
+**How it works:**
+- Uses `TinyFaceDetector` + `FaceExpressionNet` loaded from CDN — no server required
+- Webcam feed is analysed at **1-second intervals** using the browser's camera
+- Detects 7 emotions: `happy`, `sad`, `angry`, `fearful`, `surprised`, `disgusted`, `neutral`
+- Overlays face bounding boxes + expression labels directly on the video canvas
+- Shows emoji, colour-coded label, and confidence progress bar on the Dashboard
+- Fires an `onEmotionDetected(emotion, confidence%)` callback to the parent page
+
+**Integration:** Embedded in the **Dashboard** as a live widget alongside the 3D Brain Model.
+
+---
+
+### 5. ✨ NEW — Gemini AI-Powered Voice Assistant (Upgraded)
+
+The Voice Assistant was upgraded from a simple TTS/STT system to a **full conversational AI** powered by **Google Gemini 1.5 Flash**.
+
+**What's new:**
+- User speech input → transcribed via `SpeechRecognition` (STT)
+- Transcript sent to **Gemini 1.5 Flash** with a mental-health-specific empathetic system prompt
+- Gemini's response is spoken back via `SpeechSynthesis` (TTS)
+- Prefers a calm female voice (Samantha / Victoria / Google UK English Female) if available
+- If the user says "music" or "song", automatically opens a curated **Spotify calming playlist**
+- **Audio unlock banner** — prompts user to click once (browser autoplay policy workaround)
+- Pending auto-speech queued until user grants audio permission
 
 ---
 
@@ -192,6 +229,7 @@ A rule-based hybrid engine that combines:
 │    mental_health_model.pkl  — StackingEnsemble                      │
 │    scaler.pkl               — RobustScaler                          │
 │    selector.pkl             — SelectKBest (Top 20 features)         │
+│    label_encoder.pkl        — LabelEncoder  [NEW]                   │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -267,19 +305,28 @@ IoT Data (Wokwi → ThingSpeak)
 |-------|------------|
 | IoT Simulation | Wokwi (Simulated ESP32 + MPU6050 + Potentiometer) |
 | Cloud IoT | ThingSpeak API |
-| Authentication | Clerk (Sign In / Sign Up) |
+| Authentication | Clerk (Sign In / Sign Up) — contacts saved to Clerk account metadata |
 | Frontend | React.js (Vite) + Tailwind CSS + Chart.js |
-| Voice Assistant | Web Speech API (browser-native) |
+| Voice Assistant | Web Speech API (TTS + STT) + **Google Gemini 1.5 Flash** *(NEW)* |
+| Facial Emotion | **face-api.js** (TinyFaceDetector + FaceExpressionNet) *(NEW)* |
+| 3D Visualisation | **React Three Fiber + drei** (animated 3D brain model) *(NEW)* |
+| Live Location | **Google Maps API** (@react-google-maps/api) *(NEW)* |
+| Animations | **Framer Motion** *(NEW)* |
 | Backend | Flask (Python) + Flask-CORS |
+| HTTPS Dev Server | **@vitejs/plugin-basic-ssl** (self-signed SSL for camera/mic APIs) *(NEW)* |
 | AI — Main Model | Stacking Ensemble: LightGBM + XGBoost + ExtraTrees → CatBoost |
 | AI — EEG | Rule-based EEG threshold classifier |
 | AI — Hallucination | Hybrid rule engine (stress + sleep quality) |
+| AI — Emotion | face-api.js in-browser facial expression recognition *(NEW)* |
+| AI — Voice NLP | Google Gemini 1.5 Flash (`@google/generative-ai`) *(NEW)* |
 | Hyperparameter Tuning | Optuna (TPESampler, 50 trials/model) |
 | Feature Scaling | RobustScaler (scikit-learn) |
 | Feature Selection | SelectKBest ANOVA F-value (Top 20 of 38) |
 | Database (cloud) | Firebase Realtime Database |
 | Database (local) | SQLite (`neurowatch.db`) |
 | HTTP | Axios |
+| Push Notifications | **Web Push API + Service Worker** (`/sw.js`) *(NEW)* |
+| Device Vibration | **Navigator Vibrate API** *(NEW)* |
 | Deployment | Frontend: Vercel & Backend: Render |
 
 ---
@@ -294,18 +341,22 @@ internship/
 │   │   │   ├── thingspeak.js       # ThingSpeak IoT data fetching
 │   │   │   ├── flask.js            # Flask backend calls
 │   │   │   ├── firebase.js         # Firebase CRUD
-│   │   │   └── eeg.js              # EEG simulation calls
+│   │   │   ├── eeg.js              # EEG simulation calls
+│   │   │   └── notifications.js    # Web Push + Service Worker + Vibration API [NEW]
 │   │   ├── components/             # Reusable UI components
-│   │   │   ├── Layout/             # Sidebar, Header, Footer
+│   │   │   ├── Layout/             # Sidebar, Header, Footer, AppFooter
 │   │   │   ├── Cards/              # MetricCard, AlertCard, DeviceStatusCard
 │   │   │   ├── Charts/             # Chart.js components
+│   │   │   │   └── BrainModel3D.jsx  # Animated 3D brain (React Three Fiber) [NEW]
 │   │   │   ├── AI/                 # PredictionPanel, RecommendationPanel
+│   │   │   │   └── EmotionCamera.jsx # face-api.js facial emotion widget [NEW]
 │   │   │   ├── Notifications/      # EmergencyPopup, NotificationPanel
-│   │   │   └── Assistant/          # VoiceAssistant (Web Speech API)
+│   │   │   └── Assistant/          # VoiceAssistant (Web Speech API + Gemini AI)
 │   │   ├── context/                # AppContext (global state)
-│   │   ├── pages/                  # 9 pages (see below)
+│   │   ├── pages/                  # 10 pages (see below)
 │   │   └── index.css               # Cyberpunk dark theme
 │   ├── .env.example
+│   ├── vite.config.js              # HTTPS dev server (basicSsl plugin) [NEW]
 │   └── package.json
 │
 └── backend/                        # Flask API
@@ -318,11 +369,12 @@ internship/
     │   ├── clean_eeg.py            # EEG dataset preprocessing
     │   ├── mental_health_model.pkl # Trained StackingEnsemble (saved)
     │   ├── scaler.pkl              # Fitted RobustScaler (saved)
-    │   └── selector.pkl            # Fitted feature selector (saved)
+    │   ├── selector.pkl            # Fitted feature selector (saved)
+    │   └── label_encoder.pkl       # Fitted LabelEncoder (saved) [NEW]
     ├── routes/
     │   ├── predict.py              # POST /api/predict (main AI endpoint)
     │   ├── eeg_routes.py           # POST /api/simulate/eeg (EEG classifier)
-    │   ├── routine_routes.py       # Routine, sleep & hallucination endpoints
+    │   ├── routine_routes.py       # Routine, sleep, hallucination + therapeutic actions [UPGRADED]
     │   └── firebase_routes.py      # Firebase CRUD routes
     ├── render.yaml                 # Render.com deployment config
     ├── .env.example
@@ -340,6 +392,8 @@ internship/
 - **Wokwi account** (free) → [wokwi.com](https://wokwi.com) *(IoT simulation)*
 - **ThingSpeak account** (free) → [thingspeak.com](https://thingspeak.com) *(cloud IoT data)*
 - **Clerk account** (free) → [clerk.com](https://clerk.com) *(authentication)*
+- **Google Gemini API key** (free) → [aistudio.google.com](https://aistudio.google.com) *(voice NLP)* *(NEW)*
+- **Google Maps API key** → [console.cloud.google.com](https://console.cloud.google.com) *(location page)* *(NEW)*
 
 > 💡 No physical hardware, no microcontroller boards, no sensors needed. Everything runs in simulation.
 
@@ -351,11 +405,13 @@ internship/
 cd frontend
 npm install
 cp .env.example .env
-# Edit .env with your ThingSpeak, Firebase, and Clerk credentials
+# Edit .env with your ThingSpeak, Firebase, Clerk, Gemini, and Google Maps credentials
 npm run dev
 ```
 
-Frontend runs at: **http://localhost:5173**
+Frontend runs at: **https://localhost:5173** *(HTTPS — required for webcam + microphone APIs)*
+
+> ⚠️ The Vite dev server now runs over **HTTPS** (`@vitejs/plugin-basic-ssl`). Your browser may show a self-signed certificate warning — click "Proceed" to continue. HTTPS is required for `getUserMedia` (webcam) and `SpeechRecognition` (microphone) APIs.
 
 ---
 
@@ -383,8 +439,6 @@ Backend runs at: **http://localhost:5000**
 ---
 
 ### Step 3 — Run the IoT Simulation (Wokwi)
-
-Since this is a **simulation-based project**, no hardware is needed:
 
 1. Go to [wokwi.com](https://wokwi.com) and open the project simulation
 2. The simulated ESP32 automatically sends sensor data to ThingSpeak
@@ -417,9 +471,33 @@ Since this is a **simulation-based project**, no hardware is needed:
    VITE_CLERK_PUBLISHABLE_KEY=your_publishable_key
    ```
 
+> **New in v2:** Caregiver phone numbers are now saved to **Clerk account metadata** (`unsafeMetadata`) — not just localStorage. They sync across all devices where the user logs in.
+
 ---
 
-### Step 6 — Configure Firebase (Optional)
+### Step 6 — Configure Gemini AI *(NEW)*
+
+Get a free API key from [aistudio.google.com](https://aistudio.google.com):
+```
+VITE_GEMINI_API_KEY=your_gemini_api_key
+```
+
+> Used by the Voice Assistant to generate empathetic conversational responses.
+
+---
+
+### Step 7 — Configure Google Maps *(NEW)*
+
+Enable **Maps JavaScript API** in [Google Cloud Console](https://console.cloud.google.com):
+```
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+```
+
+> Used by the **Location** page to display patient's live GPS on a dark-themed map.
+
+---
+
+### Step 8 — Configure Firebase (Optional)
 
 1. Go to [Firebase Console](https://console.firebase.google.com)
 2. Create a project → Enable **Realtime Database**
@@ -434,19 +512,20 @@ Since this is a **simulation-based project**, no hardware is needed:
 
 ---
 
-## 🌐 Website Pages
+## 🌐 Website Pages (10 Pages)
 
 | Page | URL | Description |
 |------|-----|-------------|
 | Home | `/` | Hero section, live stats, feature overview |
-| Dashboard | `/dashboard` | Live charts + metric cards + AI stress summary |
+| Dashboard | `/dashboard` | Live charts + metric cards + AI stress summary + **3D Brain Model** + **Facial Emotion Camera** *(NEW)* |
 | Analytics | `/analytics` | Historical trends + CSV/PDF export |
 | AI Prediction | `/ai-prediction` | Live Stacking Ensemble prediction + recommendations |
 | EEG Simulator | `/eeg-simulator` | Streams Mendeley-derived EEG demo data row-by-row → rule-based cognitive load classification |
-| Patient Behaviour | `/patient-behaviour` | Sleep tracking + hallucination risk engine |
+| Patient Behaviour | `/patient-behaviour` | Sleep tracking + hallucination risk engine + **Therapeutic Action Recommendations** *(NEW)* |
+| Location | `/location` | **Live GPS map** with dark cyberpunk theme (Google Maps) *(NEW)* |
 | Alert History | `/alert-history` | Firebase alert log with filtering |
 | About | `/about` | Project details, simulation setup, tech stack |
-| Settings | `/settings` | Save emergency caregiver contact numbers (stored in localStorage) |
+| Settings | `/settings` | Emergency contacts saved to **Clerk account** (cross-device sync) *(UPGRADED)* |
 
 ---
 
@@ -457,8 +536,17 @@ Since this is a **simulation-based project**, no hardware is needed:
 | Heart Rate | > 110 BPM | 🔴 Critical alert |
 | Stress | > 75% | 🔴 Critical alert |
 | Motion | > 7 m/s² | 🟡 Warning |
-| AI Risk | HIGH | 🔴 Emergency popup |
-| Hallucination Risk | ≥ 75% | 🔴 CRITICAL — Voice assistant triggered |
+| AI Risk | HIGH | 🔴 Emergency popup + siren + vibration |
+| Hallucination Risk | ≥ 75% | 🔴 CRITICAL — Voice assistant auto-triggered |
+
+### 🆕 Emergency Popup — Upgraded Features
+- **Siren Audio:** Web Audio API square-wave oscillator alternates 800 Hz ↔ 1200 Hz
+- **Device Vibration:** `navigator.vibrate([500, 200, 500, ...])` pattern (Android browsers)
+- **Web Push Notification:** Service Worker push (fires even when app tab is backgrounded)
+- **Live GPS Location:** Fetches `navigator.geolocation` on popup open
+- **SMS with Location:** `sms:` URI sends Google Maps GPS link to Caregiver 1
+- **WhatsApp with Location:** `wa.me` link sends GPS coordinates to Caregiver 1 via WhatsApp
+- **Auto-dismiss:** Popup auto-closes after 30 seconds
 
 ---
 
@@ -469,7 +557,7 @@ Since this is a **simulation-based project**, no hardware is needed:
 | GET | `/api/health` | Server + model status |
 | POST | `/api/predict` | Stacking Ensemble stress prediction |
 | POST | `/api/simulate/eeg` | Rule-based EEG cognitive load classification |
-| POST | `/api/hallucination/predict` | Hybrid hallucination risk engine |
+| POST | `/api/hallucination/predict` | Hybrid hallucination risk engine + therapeutic actions *(UPGRADED)* |
 | POST | `/api/log` | Save sensor record to Firebase |
 | GET | `/api/history` | Retrieve sensor history from Firebase |
 | GET | `/api/alerts` | Retrieve alert log from Firebase |
@@ -496,7 +584,7 @@ Since this is a **simulation-based project**, no hardware is needed:
 }
 ```
 
-**Response:**
+**Prediction Response:**
 ```json
 {
   "risk": "MEDIUM",
@@ -509,10 +597,30 @@ Since this is a **simulation-based project**, no hardware is needed:
 }
 ```
 
+**POST /api/hallucination/predict — Upgraded Response (with therapeutic actions):**
+```json
+{
+  "hallucination_risk": 68,
+  "hallucination_level": "HIGH",
+  "sleep_quality_score": 32,
+  "sleep_status": "AWAKE",
+  "voice_trigger": true,
+  "voice_message": "You seem stressed. Would you like calming music or a breathing exercise?",
+  "recommendations": ["..."],
+  "actions": [
+    { "type": "voice",   "label": "Voice Assistant",    "message": "..." },
+    { "type": "music",   "label": "Play Relaxing Music", "url": "https://open.spotify.com/..." },
+    { "type": "breathe", "label": "Mindful Breathing",   "duration": 60 },
+    { "type": "walk",    "label": "Take a Short Walk",   "message": "..." }
+  ]
+}
+```
+
 ---
 
 ## ✨ Features
 
+### Core Features (Original v1.0)
 - 🌑 **Cyberpunk dark theme** with glassmorphism + neon glow effects
 - 🔐 **Clerk authentication** — Sign Up / Sign In before accessing the dashboard
 - 📊 **Real-time charts** (Heart Rate, Stress, Motion, AI Risk History)
@@ -520,7 +628,7 @@ Since this is a **simulation-based project**, no hardware is needed:
 - 🧠 **EEG Simulator** — brainwave cognitive load classification (Delta, Theta, Alpha, Beta, Gamma)
 - 😴 **Sleep Tracker** — automatic sleep detection + quality scoring via SQLite
 - 👁️ **Hallucination Risk Engine** — hybrid AI + sleep quality predictor
-- 🗣️ **Voice Assistant** — Web Speech API: auto-speaks alerts (TTS) + listens to user mic commands (STT)
+- 🗣️ **Voice Assistant** — Web Speech API TTS + STT
 - 🚨 **Emergency popup** with shake animation and caregiver alert
 - 🔔 **Notification panel** with dismissible alerts
 - 🌓 **Dark/Light theme** toggle
@@ -530,9 +638,41 @@ Since this is a **simulation-based project**, no hardware is needed:
 - ♻️ **Auto-refresh** every 15 seconds
 - 🔌 **Graceful fallback** — works with simulated data if ThingSpeak/Firebase not configured
 
+### 🆕 New Features Added in v2.0
+- 😊 **Facial Emotion Recognition** — Real-time webcam-based emotion detection using **face-api.js** (TinyFaceDetector + FaceExpressionNet); detects 7 emotions with confidence % shown on the Dashboard
+- 🧬 **3D Animated Brain Model** — Interactive Three.js brain sphere on the Dashboard; colour and distortion level dynamically reflect the AI risk level (LOW=cyan, MEDIUM=amber, HIGH=red)
+- 🗣️ **Gemini AI Voice Assistant** — Full conversational AI (STT → Gemini 1.5 Flash → TTS); empathetic mental health responses + Spotify playlist integration on voice command
+- 📍 **Live Location Page** — Google Maps with custom dark theme and live GPS marker showing real-time patient location
+- 💊 **Therapeutic Action Engine** — Backend returns structured action recommendations (voice, music, breathe, journal, walk, contact) per risk level alongside the hallucination prediction
+- 📲 **Web Push Notifications** — Service Worker integration: push alerts fire even when the app tab is backgrounded
+- 📳 **Device Vibration** — `navigator.vibrate` aggressive pattern on HIGH risk (Android browsers)
+- 🔊 **Emergency Siren** — Web Audio API oscillator plays alternating 800/1200 Hz during emergency
+- 📱 **WhatsApp + SMS Location Alert** — Emergency popup sends patient GPS to caregivers via `sms:` URI and WhatsApp `wa.me` link
+- 🔐 **Account-Synced Caregiver Contacts** — Stored in **Clerk `unsafeMetadata`** (syncs across devices); locked UI prevents accidental edits
+- 🔒 **HTTPS Dev Server** — `@vitejs/plugin-basic-ssl` enables HTTPS in Vite dev mode (required for webcam + mic)
+- 🎵 **Music Integration** — Voice assistant opens calming Spotify playlists when user says "music" or "song"
+- 📊 **Doughnut Sleep Status Chart** — Patient Behaviour page now shows a Sleeping vs Awake ratio pie chart
+- ⚡ **Audio Unlock Banner** — Floating banner prompts user to click once to enable auto-speech (browser autoplay policy fix)
+
+---
+
+## 📝 Environment Variables Summary
+
+| Variable | Location | Purpose |
+|----------|----------|---------|
+| `VITE_THINGSPEAK_CHANNEL_ID` | Frontend | ThingSpeak channel ID |
+| `VITE_THINGSPEAK_API_KEY` | Frontend | ThingSpeak read API key |
+| `VITE_FLASK_URL` | Frontend | Flask backend URL |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Frontend | Clerk auth key |
+| `VITE_FIREBASE_*` | Frontend | Firebase client config (6 vars) |
+| `VITE_GEMINI_API_KEY` | Frontend *(NEW)* | Gemini AI voice NLP |
+| `VITE_GOOGLE_MAPS_API_KEY` | Frontend *(NEW)* | Google Maps location page |
+| `FIREBASE_DATABASE_URL` | Backend | Firebase Realtime DB URL |
+| `FIREBASE_CREDENTIALS_JSON` | Backend *(NEW)* | Firebase service account JSON (Render deployment env fallback) |
+
 ---
 
 ## 📝 Credits
 
-Built with ❤️ using **Wokwi IoT Simulator** · ThingSpeak · Clerk · WESAD Dataset · LightGBM · XGBoost · CatBoost · Flask · Firebase · React.js  
-**NeuroWatch AI v1.0** — Simulation-Based IoT Mental Health Monitoring System
+Built with ❤️ using **Wokwi IoT Simulator** · ThingSpeak · Clerk · WESAD Dataset · LightGBM · XGBoost · CatBoost · Flask · Firebase · React.js · face-api.js · Google Gemini AI · React Three Fiber · Google Maps API  
+**NeuroWatch AI v2.0** — Simulation-Based IoT Mental Health Monitoring System
