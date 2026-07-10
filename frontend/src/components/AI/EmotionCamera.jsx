@@ -28,12 +28,10 @@ const EmotionCamera = ({ onEmotionDetected }) => {
   const [confidence, setConfidence] = useState(0);
   const [error, setError] = useState('');
   const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [debugInfo, setDebugInfo] = useState('Initializing...');
 
   useEffect(() => {
     const loadModels = async () => {
       try {
-        setDebugInfo('Loading models from CDN...');
         const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
@@ -41,11 +39,9 @@ const EmotionCamera = ({ onEmotionDetected }) => {
         ]);
         setModelsLoaded(true);
         setIsLoading(false);
-        setDebugInfo('Models loaded successfully.');
       } catch (e) {
         setError('Failed to load AI models. Check your internet connection.');
         setIsLoading(false);
-        setDebugInfo(`Model Load Error: ${e.message}`);
       }
     };
     loadModels();
@@ -84,11 +80,9 @@ const EmotionCamera = ({ onEmotionDetected }) => {
     console.log("[EmotionCamera] Starting detection interval...");
     intervalRef.current = setInterval(async () => {
       if (!videoRef.current || !canvasRef.current || !modelsLoaded || videoRef.current.videoWidth === 0 || videoRef.current.readyState < 2) {
-          setDebugInfo(`Waiting... VideoReady:${videoRef.current?.readyState || 0} Width:${videoRef.current?.videoWidth || 0}`);
           return;
       }
       try {
-        setDebugInfo(`Detecting... Video:${videoRef.current.videoWidth}x${videoRef.current.videoHeight}`);
         const detections = await faceapi
           .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.2 }))
           .withFaceExpressions();
@@ -104,7 +98,7 @@ const EmotionCamera = ({ onEmotionDetected }) => {
         const resized = faceapi.resizeResults(detections, dims);
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        faceapi.draw.drawFaceExpressions(canvas, resized);
+        // faceapi.draw.drawFaceExpressions(canvas, resized); // Commented out to hide white text over face
 
         if (detections.length > 0) {
           const exprs = detections[0].expressions;
@@ -112,12 +106,9 @@ const EmotionCamera = ({ onEmotionDetected }) => {
           setEmotion(topEmotion[0]);
           setConfidence(Math.round(topEmotion[1] * 100));
           if (onEmotionDetected) onEmotionDetected(topEmotion[0], Math.round(topEmotion[1] * 100));
-          setDebugInfo(`Face found! Emotion: ${topEmotion[0]}`);
-        } else {
-            setDebugInfo(`0 faces detected. Try moving closer or improving lighting.`);
         }
       } catch (e) {
-          setDebugInfo(`Detection Error: ${e.message}`);
+          console.error("[EmotionCamera] Detection Error:", e);
       }
     }, 1000);
   };
@@ -148,11 +139,6 @@ const EmotionCamera = ({ onEmotionDetected }) => {
       <div className="relative rounded-xl overflow-hidden bg-[#0a0a0a] border border-cyber-border" style={{ height: 200 }}>
         <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
-        
-        {/* Debug Overlay */}
-        <div className="absolute top-2 left-2 bg-black/70 text-[10px] text-green-400 font-mono px-2 py-1 rounded z-50 pointer-events-none">
-          {debugInfo}
-        </div>
 
         {!isActive && !isLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60">
