@@ -77,12 +77,18 @@ const EmotionCamera = ({ onEmotionDetected }) => {
   };
 
   const startDetection = () => {
+    console.log("[EmotionCamera] Starting detection interval...");
     intervalRef.current = setInterval(async () => {
-      if (!videoRef.current || !canvasRef.current || !modelsLoaded) return;
+      if (!videoRef.current || !canvasRef.current || !modelsLoaded) {
+          console.log("[EmotionCamera] Waiting for video, canvas, or models to load...", {hasVideo: !!videoRef.current, hasCanvas: !!canvasRef.current, modelsLoaded});
+          return;
+      }
       try {
         const detections = await faceapi
           .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
           .withFaceExpressions();
+
+        console.log("[EmotionCamera] Detections found:", detections.length);
 
         const canvas = canvasRef.current;
         const dims = { width: videoRef.current.videoWidth, height: videoRef.current.videoHeight };
@@ -101,8 +107,12 @@ const EmotionCamera = ({ onEmotionDetected }) => {
           setEmotion(topEmotion[0]);
           setConfidence(Math.round(topEmotion[1] * 100));
           if (onEmotionDetected) onEmotionDetected(topEmotion[0], Math.round(topEmotion[1] * 100));
+        } else {
+            console.log("[EmotionCamera] No face detected by AI model.");
         }
-      } catch (e) { /* silent */ }
+      } catch (e) {
+          console.error("[EmotionCamera] Detection Error:", e);
+      }
     }, 1000);
   };
 

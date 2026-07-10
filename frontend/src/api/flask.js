@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const FLASK_BASE = '';
+const FLASK_BASE = import.meta.env.VITE_FLASK_URL || '';
 
 /**
  * Get AI risk prediction from Flask backend.

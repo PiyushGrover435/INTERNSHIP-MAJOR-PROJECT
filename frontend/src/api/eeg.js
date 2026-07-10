@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const FLASK_BASE = '';
+const FLASK_BASE = import.meta.env.VITE_FLASK_URL || '';
 
 /**
  * Send one row of EEG data to Flask for cognitive load classification.
