@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import * as faceapi from 'face-api.js';
+import * as faceapi from '@vladmandic/face-api';
 import { Camera, AlertTriangle, Loader } from 'lucide-react';
 
 const EMOTION_COLORS = {
