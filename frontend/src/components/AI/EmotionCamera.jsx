@@ -78,9 +78,7 @@ const EmotionCamera = ({ onEmotionDetected }) => {
     setEmotion(null);
   };
 
-  const startDetection = () => {
-    console.log("[EmotionCamera] Starting detection interval...");
-    intervalRef.current = setInterval(async () => {
+  const performDetection = async () => {
       if (!videoRef.current || !canvasRef.current || !modelsLoaded || videoRef.current.videoWidth === 0 || videoRef.current.readyState < 2) {
           return;
       }
@@ -119,9 +117,7 @@ const EmotionCamera = ({ onEmotionDetected }) => {
   };
 
   const startDetection = () => {
-    // Run immediately without waiting for the first interval tick
     setTimeout(performDetection, 100); 
-    // Then run every 500ms (twice as fast as before)
     intervalRef.current = setInterval(performDetection, 500);
   };
 
