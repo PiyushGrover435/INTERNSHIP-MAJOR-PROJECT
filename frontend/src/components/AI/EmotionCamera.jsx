@@ -21,7 +21,9 @@ const EmotionCamera = ({ onEmotionDetected }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const intervalRef = useRef(null);
-  const emotionHistory = useRef([]);
+  const currentEmotionRef = useRef('neutral');
+  const targetEmotionRef = useRef(null);
+  const consecutiveCountRef = useRef(0);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isActive, setIsActive] = useState(false);
@@ -73,7 +75,9 @@ const EmotionCamera = ({ onEmotionDetected }) => {
       videoRef.current.srcObject.getTracks().forEach(t => t.stop());
       videoRef.current.srcObject = null;
     }
-    emotionHistory.current = [];
+    currentEmotionRef.current = 'neutral';
+    targetEmotionRef.current = null;
+    consecutiveCountRef.current = 0;
     setIsActive(false);
     setEmotion(null);
   };
@@ -98,22 +102,32 @@ const EmotionCamera = ({ onEmotionDetected }) => {
             topEmotionScore = 0.5; 
           }
 
-          emotionHistory.current.push({ name: topEmotionName, score: topEmotionScore });
-          if (emotionHistory.current.length > 5) emotionHistory.current.shift(); // 2.5 seconds history
-
-          const counts = emotionHistory.current.reduce((acc, curr) => {
-              acc[curr.name] = (acc[curr.name] || 0) + 1;
-              return acc;
-          }, {});
-          const smoothedEmotion = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
-
-          // Calculate average confidence for the winning emotion
-          const matchingFrames = emotionHistory.current.filter(e => e.name === smoothedEmotion);
-          const avgScore = matchingFrames.reduce((acc, curr) => acc + curr.score, 0) / matchingFrames.length;
-
-          setEmotion(smoothedEmotion);
-          setConfidence(Math.round(avgScore * 100));
-          if (onEmotionDetected) onEmotionDetected(smoothedEmotion, Math.round(avgScore * 100));
+          // Anti-Flicker Hysteresis Algorithm (Requires 4 consecutive identical frames to change state)
+          if (topEmotionName === currentEmotionRef.current) {
+              // Same emotion as currently displayed, reset counters and just update confidence smoothly
+              consecutiveCountRef.current = 0;
+              targetEmotionRef.current = null;
+              setEmotion(currentEmotionRef.current);
+              setConfidence(Math.round(topEmotionScore * 100));
+          } else {
+              // A different emotion was detected
+              if (topEmotionName === targetEmotionRef.current) {
+                  // It's the same as the pending new emotion, increment counter
+                  consecutiveCountRef.current += 1;
+                  if (consecutiveCountRef.current >= 4) {
+                      // It has been consistently this new emotion for 4 frames (~2 seconds). Accept it!
+                      currentEmotionRef.current = topEmotionName;
+                      consecutiveCountRef.current = 0;
+                      setEmotion(topEmotionName);
+                      setConfidence(Math.round(topEmotionScore * 100));
+                      if (onEmotionDetected) onEmotionDetected(topEmotionName, Math.round(topEmotionScore * 100));
+                  }
+              } else {
+                  // A brand new emotion just appeared, start counting it
+                  targetEmotionRef.current = topEmotionName;
+                  consecutiveCountRef.current = 1;
+              }
+          }
         }
       } catch (e) {
           console.error("[EmotionCamera] Detection Error:", e);
