@@ -93,13 +93,13 @@ const EmotionCamera = ({ onEmotionDetected }) => {
           let topEmotionName = sorted[0][0];
           let topEmotionScore = sorted[0][1];
 
-          if (topEmotionScore < 0.4 && topEmotionName !== 'neutral') {
+          if (topEmotionScore < 0.5 && topEmotionName !== 'neutral') {
             topEmotionName = 'neutral';
             topEmotionScore = 0.5; 
           }
 
           emotionHistory.current.push(topEmotionName);
-          if (emotionHistory.current.length > 4) emotionHistory.current.shift(); // 2 seconds of smoothing at 500ms interval
+          if (emotionHistory.current.length > 10) emotionHistory.current.shift(); // 5 seconds of smoothing at 500ms interval
 
           const counts = emotionHistory.current.reduce((acc, curr) => {
               acc[curr] = (acc[curr] || 0) + 1;
