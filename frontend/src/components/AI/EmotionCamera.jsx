@@ -21,6 +21,7 @@ const EmotionCamera = ({ onEmotionDetected }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const intervalRef = useRef(null);
+  const emotionHistory = useRef([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isActive, setIsActive] = useState(false);
@@ -72,6 +73,7 @@ const EmotionCamera = ({ onEmotionDetected }) => {
       videoRef.current.srcObject.getTracks().forEach(t => t.stop());
       videoRef.current.srcObject = null;
     }
+    emotionHistory.current = [];
     setIsActive(false);
     setEmotion(null);
   };
@@ -102,10 +104,30 @@ const EmotionCamera = ({ onEmotionDetected }) => {
 
         if (detections.length > 0) {
           const exprs = detections[0].expressions;
-          const topEmotion = Object.entries(exprs).sort((a, b) => b[1] - a[1])[0];
-          setEmotion(topEmotion[0]);
-          setConfidence(Math.round(topEmotion[1] * 100));
-          if (onEmotionDetected) onEmotionDetected(topEmotion[0], Math.round(topEmotion[1] * 100));
+          const sorted = Object.entries(exprs).sort((a, b) => b[1] - a[1]);
+          let topEmotionName = sorted[0][0];
+          let topEmotionScore = sorted[0][1];
+
+          // Noise filter: If confidence is very low, assume neutral to prevent flickering
+          if (topEmotionScore < 0.4 && topEmotionName !== 'neutral') {
+            topEmotionName = 'neutral';
+            topEmotionScore = 0.5; 
+          }
+
+          // History buffer for smoothing (last 3 seconds)
+          emotionHistory.current.push(topEmotionName);
+          if (emotionHistory.current.length > 3) emotionHistory.current.shift();
+
+          // Find the most frequent emotion in the buffer
+          const counts = emotionHistory.current.reduce((acc, curr) => {
+              acc[curr] = (acc[curr] || 0) + 1;
+              return acc;
+          }, {});
+          const smoothedEmotion = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+
+          setEmotion(smoothedEmotion);
+          setConfidence(Math.round(topEmotionScore * 100));
+          if (onEmotionDetected) onEmotionDetected(smoothedEmotion, Math.round(topEmotionScore * 100));
         }
       } catch (e) {
           console.error("[EmotionCamera] Detection Error:", e);
