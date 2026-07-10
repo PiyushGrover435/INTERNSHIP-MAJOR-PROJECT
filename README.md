@@ -136,13 +136,12 @@ A rule-based hybrid engine that combines:
 A **real-time, in-browser AI** facial emotion detection system powered by the modern **@vladmandic/face-api** (TensorFlow.js under the hood).
 
 **How it works:**
-- Uses the high-accuracy **`SSDMobileNetV1`** deep learning model + `FaceExpressionNet` loaded from CDN — no server required.
-- Includes a **Custom Smoothing Algorithm (Anti-Flicker)** that buffers a 3-second history of micro-expressions to provide a stable, human-like emotion output.
-- Webcam feed is analysed at **1-second intervals** using the browser's camera
-- Detects 7 emotions: `happy`, `sad`, `angry`, `fearful`, `surprised`, `disgusted`, `neutral`
-- Overlays face bounding boxes + expression labels directly on the video canvas
-- Shows emoji, colour-coded label, and confidence progress bar on the Dashboard
-- Fires an `onEmotionDetected(emotion, confidence%)` callback to the parent page
+- Uses the high-accuracy **`SSDMobileNetV1`** deep learning model + `FaceExpressionNet` loaded from CDN — no backend processing required.
+- Implements a mathematically rigorous **Anti-Flicker Hysteresis Algorithm**: The UI emotion state is strictly locked and will only transition if the neural network detects a completely different emotion for **four consecutive inference frames** (2 seconds of sustained expression). This completely eliminates micro-expression flickering and false-positive noise.
+- Webcam feed is analyzed continuously with a **500ms polling rate**, ensuring rapid responsiveness while maintaining state stability.
+- Detects 7 emotions: `happy`, `sad`, `angry`, `fearful`, `surprised`, `disgusted`, `neutral`.
+- Shows emoji, colour-coded label, and dynamically averaged confidence progress bar on the Dashboard.
+- Fires an `onEmotionDetected(emotion, confidence%)` callback to the parent page.
 
 **Integration:** Embedded in the **Dashboard** as a live widget alongside the 3D Brain Model.
 
@@ -640,7 +639,7 @@ VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 - 🔌 **Graceful fallback** — works with simulated data if ThingSpeak/Firebase not configured
 
 ### 🆕 New Features Added in v2.0
-- 😊 **Facial Emotion Recognition** — Real-time webcam-based emotion detection using the modern **@vladmandic/face-api** (`SSDMobileNetV1` + `FaceExpressionNet`); includes anti-flicker smoothing algorithm and detects 7 emotions with confidence % shown on the Dashboard.
+- 😊 **Facial Emotion Recognition** — Real-time webcam-based emotion detection using the modern **@vladmandic/face-api** (`SSDMobileNetV1` + `FaceExpressionNet`); implements a mathematically rigorous **Anti-Flicker Hysteresis Algorithm** requiring 4 consecutive identical frames to change UI state, completely eliminating noise. Detects 7 emotions with dynamically averaged confidence % shown on the Dashboard.
 - 🧬 **3D Animated Brain Model** — Interactive Three.js brain sphere on the Dashboard; colour and distortion level dynamically reflect the AI risk level (LOW=cyan, MEDIUM=amber, HIGH=red)
 - 🗣️ **Gemini AI Voice Assistant** — Full conversational AI (STT → Gemini 1.5 Flash → TTS); empathetic mental health responses + Spotify playlist integration on voice command
 - 📍 **Live Location Page** — Google Maps with custom dark theme and live GPS marker showing real-time patient location
