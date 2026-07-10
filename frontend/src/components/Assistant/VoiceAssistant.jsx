@@ -1,15 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, MicOff, Volume2, VolumeX, Brain, X, Zap } from 'lucide-react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const RESPONSES = {
-  greet: "Hello! I am your NeuroWatch assistant. I am here to help you manage stress and stay healthy.",
-  music: "Of course! Opening a calming music playlist for you right now. Just relax and breathe.",
-  breathe: "Let us do a simple breathing exercise together. Breathe in slowly for 4 counts... hold for 4... and breathe out for 6. Let us begin.",
-  lonely: "I hear you. You are not alone. I am always here with you. Would you like to listen to some music or talk for a bit?",
-  calm: "You are doing great. Close your eyes for a moment, take a slow breath, and remember that this feeling will pass.",
-  stop: "Understood. I am here whenever you need me. Take care.",
-  unknown: "I am here for you. You can say things like: play music, breathing exercise, or I feel lonely.",
-};
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || 'dummy_key');
 
 const VoiceAssistant = ({ hallucinationRisk, hallucinationLevel, voiceMessage, voiceTrigger }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -121,26 +114,30 @@ const VoiceAssistant = ({ hallucinationRisk, hallucinationLevel, voiceMessage, v
     recognition.onend = () => setIsListening(false);
     recognition.onerror = () => setIsListening(false);
 
-    recognition.onresult = (event) => {
+    recognition.onresult = async (event) => {
       const said = event.results[0][0].transcript.toLowerCase();
       setTranscript(said);
+      setIsListening(false);
+      setAssistantText("Thinking...");
 
-      if (said.includes('music') || said.includes('song') || said.includes('playlist')) {
-        speak(RESPONSES.music);
-        setMusicUrl('https://open.spotify.com/playlist/37i9dQZF1DWZqd5JICZI0u');
-      } else if (said.includes('breath') || said.includes('exercise')) {
-        speak(RESPONSES.breathe);
-      } else if (said.includes('lonely') || said.includes('alone') || said.includes('sad')) {
-        speak(RESPONSES.lonely);
-      } else if (said.includes('calm') || said.includes('stress') || said.includes('anxiety')) {
-        speak(RESPONSES.calm);
-      } else if (said.includes('stop') || said.includes('quit') || said.includes('bye')) {
-        speak(RESPONSES.stop);
-        setTimeout(() => setIsOpen(false), 3000);
-      } else if (said.includes('hello') || said.includes('hi') || said.includes('hey')) {
-        speak(RESPONSES.greet);
-      } else {
-        speak(RESPONSES.unknown);
+      try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const prompt = `You are a personal mental health AI assistant for a patient using the NeuroWatch system. 
+        The patient just said: "${said}". 
+        Respond in a highly empathetic, calming, and human-like manner. Keep the response short (under 2 sentences). Do not use medical jargon. Speak directly to them like a caring friend.`;
+        
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text().replace(/\*/g, '');
+        speak(responseText);
+
+        if (said.includes('music') || said.includes('song') || said.includes('playlist')) {
+          setMusicUrl('https://open.spotify.com/playlist/37i9dQZF1DWZqd5JICZI0u');
+        } else if (said.includes('stop') || said.includes('quit') || said.includes('bye')) {
+          setTimeout(() => setIsOpen(false), 3000);
+        }
+      } catch (error) {
+        console.error("Gemini API Error:", error);
+        speak("I am here for you, but I'm having a little trouble connecting right now. Please take a deep breath.");
       }
     };
 

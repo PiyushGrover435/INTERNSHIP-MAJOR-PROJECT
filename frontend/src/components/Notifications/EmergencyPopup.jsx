@@ -1,13 +1,88 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
-import { AlertTriangle, X, Phone } from 'lucide-react';
+import { AlertTriangle, X, Phone, MapPin } from 'lucide-react';
+import { fireEmergencyAlert } from '../../api/notifications';
 
 const EmergencyPopup = () => {
   const { emergencyActive, dismissEmergency, alerts, sensorData } = useApp();
+  const audioCtxRef = useRef(null);
+  const oscillatorRef = useRef(null);
+  const sirenIntervalRef = useRef(null);
 
   // Load personalized numbers from settings or fallback to defaults
   const caregiver1 = localStorage.getItem('caregiver1') || '+919999999999';
   const caregiver2 = localStorage.getItem('caregiver2') || '+918888888888';
+
+  const [locationLink, setLocationLink] = useState('');
+
+  useEffect(() => {
+    if (emergencyActive && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocationLink(`https://maps.google.com/?q=${position.coords.latitude},${position.coords.longitude}`);
+        },
+        (error) => console.error("Error getting location:", error)
+      );
+    }
+  }, [emergencyActive]);
+
+  // Start Siren, Vibration & Web Push Notification
+  useEffect(() => {
+    if (emergencyActive) {
+      // Fire device-level push notification (even if browser tab is hidden)
+      fireEmergencyAlert({
+        heartRate: sensorData.heartRate,
+        stress: sensorData.stress,
+        motion: sensorData.motion,
+        risk: 'HIGH'
+      });
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!audioCtxRef.current && AudioContext) {
+          audioCtxRef.current = new AudioContext();
+          const osc = audioCtxRef.current.createOscillator();
+          const gainNode = audioCtxRef.current.createGain();
+          
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(800, audioCtxRef.current.currentTime);
+          gainNode.gain.value = 0.1; // Keep it low but noticeable
+          
+          osc.connect(gainNode);
+          gainNode.connect(audioCtxRef.current.destination);
+          osc.start();
+          oscillatorRef.current = osc;
+
+          let isHigh = false;
+          sirenIntervalRef.current = setInterval(() => {
+            if (audioCtxRef.current) {
+              osc.frequency.setValueAtTime(isHigh ? 1200 : 800, audioCtxRef.current.currentTime);
+            }
+            isHigh = !isHigh;
+            if (navigator.vibrate) navigator.vibrate([400, 100]); // Aggressive shake
+          }, 500);
+        }
+      } catch (e) {
+        console.error("Audio Context failed:", e);
+      }
+    } else {
+      // Stop Siren & Vibration
+      if (sirenIntervalRef.current) clearInterval(sirenIntervalRef.current);
+      if (oscillatorRef.current) {
+        oscillatorRef.current.stop();
+        oscillatorRef.current = null;
+      }
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close();
+        audioCtxRef.current = null;
+      }
+      if (navigator.vibrate) navigator.vibrate(0);
+    }
+    
+    return () => {
+      if (sirenIntervalRef.current) clearInterval(sirenIntervalRef.current);
+      if (navigator.vibrate) navigator.vibrate(0);
+    };
+  }, [emergencyActive]);
 
   // Auto-dismiss after 30 seconds
   useEffect(() => {
@@ -89,6 +164,27 @@ const EmergencyPopup = () => {
                   flex items-center justify-center gap-1.5">
                   <Phone className="w-3.5 h-3.5" />
                   Call {caregiver2.slice(0, 5)}...
+                </a>
+              </div>
+              <div className="flex gap-3">
+                <a 
+                  href={locationLink ? `sms:${caregiver1}?body=Emergency!%20Patient%20needs%20help.%20Location:%20${encodeURIComponent(locationLink)}` : '#'} 
+                  className={`flex-1 py-2.5 rounded-xl border font-semibold text-[11px] flex items-center justify-center gap-1.5 transition-all
+                    ${locationLink ? 'border-cyber-danger/40 bg-cyber-danger/20 text-cyber-danger hover:bg-cyber-danger/30 shadow-[0_0_15px_rgba(255,61,113,0.2)]' : 'border-cyber-border/40 bg-cyber-surface text-cyber-muted cursor-not-allowed'}`}
+                  onClick={(e) => !locationLink && e.preventDefault()}
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  SMS Location
+                </a>
+                <a 
+                  href={locationLink ? `https://wa.me/${caregiver1.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Emergency! Patient needs help. Location: ' + locationLink)}` : '#'} 
+                  target="_blank" rel="noreferrer"
+                  className={`flex-1 py-2.5 rounded-xl border font-semibold text-[11px] flex items-center justify-center gap-1.5 transition-all
+                    ${locationLink ? 'border-[#25D366]/40 bg-[#25D366]/20 text-[#25D366] hover:bg-[#25D366]/30 shadow-[0_0_15px_rgba(37,211,102,0.2)]' : 'border-cyber-border/40 bg-cyber-surface text-cyber-muted cursor-not-allowed'}`}
+                  onClick={(e) => !locationLink && e.preventDefault()}
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  WhatsApp Location
                 </a>
               </div>
               <button

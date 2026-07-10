@@ -18,6 +18,7 @@ import About from './pages/About';
 import Settings from './pages/Settings';
 import EEGSimulator from './pages/EEGSimulator';
 import PatientBehaviour from './pages/PatientBehaviour';
+import Location from './pages/Location';
 import VoiceAssistant from './components/Assistant/VoiceAssistant';
 
 const Layout = ({ children }) => (
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/eeg-simulator" element={<EEGSimulator />} />
             <Route path="/patient-behaviour" element={<PatientBehaviour />} />
             <Route path="/alert-history" element={<AlertHistory />} />
+            <Route path="/location" element={<Location />} />
             <Route path="/about" element={<About />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>

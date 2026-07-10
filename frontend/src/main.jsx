@@ -4,6 +4,11 @@ import App from './App.jsx'
 import './index.css'
 import { ClerkProvider } from '@clerk/clerk-react';
 import { dark } from '@clerk/themes';
+import { registerServiceWorker, requestNotificationPermission } from './api/notifications.js';
+
+// Boot: Register SW + Request notification permission
+registerServiceWorker();
+requestNotificationPermission();
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 

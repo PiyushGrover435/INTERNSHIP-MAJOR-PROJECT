@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import {
   LayoutDashboard, Activity, Brain, History,
-  Info, Home, X, Wifi, Cpu, AlertTriangle, BarChart2, Microscope, UserRound, Settings as SettingsIcon
+  Info, Home, X, Wifi, Cpu, AlertTriangle, BarChart2, Microscope, UserRound, Settings as SettingsIcon, MapPin
 } from 'lucide-react';
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
   { path: '/ai-prediction',      label: 'AI Prediction',     icon: Brain         },
   { path: '/eeg-simulator',      label: 'EEG Simulator',     icon: Microscope    },
   { path: '/patient-behaviour',  label: 'Patient Behaviour', icon: UserRound     },
+  { path: '/location',           label: 'Location',          icon: MapPin        },
   { path: '/alert-history',      label: 'Alert History',     icon: History       },
   { path: '/about',              label: 'About',             icon: Info          },
   { path: '/settings',           label: 'Settings',          icon: SettingsIcon  },
