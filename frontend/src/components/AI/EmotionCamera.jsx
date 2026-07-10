@@ -93,23 +93,27 @@ const EmotionCamera = ({ onEmotionDetected }) => {
           let topEmotionName = sorted[0][0];
           let topEmotionScore = sorted[0][1];
 
-          if (topEmotionScore < 0.5 && topEmotionName !== 'neutral') {
+          if (topEmotionScore < 0.3 && topEmotionName !== 'neutral') {
             topEmotionName = 'neutral';
             topEmotionScore = 0.5; 
           }
 
-          emotionHistory.current.push(topEmotionName);
-          if (emotionHistory.current.length > 10) emotionHistory.current.shift(); // 5 seconds of smoothing at 500ms interval
+          emotionHistory.current.push({ name: topEmotionName, score: topEmotionScore });
+          if (emotionHistory.current.length > 5) emotionHistory.current.shift(); // 2.5 seconds history
 
           const counts = emotionHistory.current.reduce((acc, curr) => {
-              acc[curr] = (acc[curr] || 0) + 1;
+              acc[curr.name] = (acc[curr.name] || 0) + 1;
               return acc;
           }, {});
           const smoothedEmotion = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
 
+          // Calculate average confidence for the winning emotion
+          const matchingFrames = emotionHistory.current.filter(e => e.name === smoothedEmotion);
+          const avgScore = matchingFrames.reduce((acc, curr) => acc + curr.score, 0) / matchingFrames.length;
+
           setEmotion(smoothedEmotion);
-          setConfidence(Math.round(topEmotionScore * 100));
-          if (onEmotionDetected) onEmotionDetected(smoothedEmotion, Math.round(topEmotionScore * 100));
+          setConfidence(Math.round(avgScore * 100));
+          if (onEmotionDetected) onEmotionDetected(smoothedEmotion, Math.round(avgScore * 100));
         }
       } catch (e) {
           console.error("[EmotionCamera] Detection Error:", e);
