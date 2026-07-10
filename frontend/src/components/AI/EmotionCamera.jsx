@@ -89,36 +89,20 @@ const EmotionCamera = ({ onEmotionDetected }) => {
           .detectAllFaces(videoRef.current, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.4 }))
           .withFaceExpressions();
 
-        console.log("[EmotionCamera] Detections found:", detections.length);
-
-        const canvas = canvasRef.current;
-        const dims = { width: videoRef.current.videoWidth, height: videoRef.current.videoHeight };
-        canvas.width = dims.width;
-        canvas.height = dims.height;
-
-        faceapi.matchDimensions(canvas, dims);
-        const resized = faceapi.resizeResults(detections, dims);
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // faceapi.draw.drawFaceExpressions(canvas, resized); // Commented out to hide white text over face
-
         if (detections.length > 0) {
           const exprs = detections[0].expressions;
           const sorted = Object.entries(exprs).sort((a, b) => b[1] - a[1]);
           let topEmotionName = sorted[0][0];
           let topEmotionScore = sorted[0][1];
 
-          // Noise filter: If confidence is very low, assume neutral to prevent flickering
           if (topEmotionScore < 0.4 && topEmotionName !== 'neutral') {
             topEmotionName = 'neutral';
             topEmotionScore = 0.5; 
           }
 
-          // History buffer for smoothing (last 3 seconds)
           emotionHistory.current.push(topEmotionName);
-          if (emotionHistory.current.length > 3) emotionHistory.current.shift();
+          if (emotionHistory.current.length > 4) emotionHistory.current.shift(); // 2 seconds of smoothing at 500ms interval
 
-          // Find the most frequent emotion in the buffer
           const counts = emotionHistory.current.reduce((acc, curr) => {
               acc[curr] = (acc[curr] || 0) + 1;
               return acc;
@@ -132,7 +116,13 @@ const EmotionCamera = ({ onEmotionDetected }) => {
       } catch (e) {
           console.error("[EmotionCamera] Detection Error:", e);
       }
-    }, 1000);
+  };
+
+  const startDetection = () => {
+    // Run immediately without waiting for the first interval tick
+    setTimeout(performDetection, 100); 
+    // Then run every 500ms (twice as fast as before)
+    intervalRef.current = setInterval(performDetection, 500);
   };
 
   return (
