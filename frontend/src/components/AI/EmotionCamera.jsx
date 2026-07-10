@@ -35,7 +35,7 @@ const EmotionCamera = ({ onEmotionDetected }) => {
       try {
         const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
         await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
           faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
         ]);
         setModelsLoaded(true);
@@ -86,7 +86,7 @@ const EmotionCamera = ({ onEmotionDetected }) => {
       }
       try {
         const detections = await faceapi
-          .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.2 }))
+          .detectAllFaces(videoRef.current, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.4 }))
           .withFaceExpressions();
 
         console.log("[EmotionCamera] Detections found:", detections.length);
