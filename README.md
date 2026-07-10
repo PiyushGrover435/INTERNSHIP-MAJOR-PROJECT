@@ -131,12 +131,13 @@ A rule-based hybrid engine that combines:
 
 ---
 
-### 4. ✨ NEW — Facial Emotion Recognition (face-api.js)
+### 4. ✨ NEW — Facial Emotion Recognition (@vladmandic/face-api)
 
-A **real-time, in-browser AI** facial emotion detection system powered by **face-api.js** (TensorFlow.js under the hood).
+A **real-time, in-browser AI** facial emotion detection system powered by the modern **@vladmandic/face-api** (TensorFlow.js under the hood).
 
 **How it works:**
-- Uses `TinyFaceDetector` + `FaceExpressionNet` loaded from CDN — no server required
+- Uses the high-accuracy **`SSDMobileNetV1`** deep learning model + `FaceExpressionNet` loaded from CDN — no server required.
+- Includes a **Custom Smoothing Algorithm (Anti-Flicker)** that buffers a 3-second history of micro-expressions to provide a stable, human-like emotion output.
 - Webcam feed is analysed at **1-second intervals** using the browser's camera
 - Detects 7 emotions: `happy`, `sad`, `angry`, `fearful`, `surprised`, `disgusted`, `neutral`
 - Overlays face bounding boxes + expression labels directly on the video canvas
@@ -308,7 +309,7 @@ IoT Data (Wokwi → ThingSpeak)
 | Authentication | Clerk (Sign In / Sign Up) — contacts saved to Clerk account metadata |
 | Frontend | React.js (Vite) + Tailwind CSS + Chart.js |
 | Voice Assistant | Web Speech API (TTS + STT) + **Google Gemini 1.5 Flash** *(NEW)* |
-| Facial Emotion | **face-api.js** (TinyFaceDetector + FaceExpressionNet) *(NEW)* |
+| Facial Emotion | **@vladmandic/face-api** (SSDMobileNetV1 + FaceExpressionNet + Smoothing) *(NEW)* |
 | 3D Visualisation | **React Three Fiber + drei** (animated 3D brain model) *(NEW)* |
 | Live Location | **Google Maps API** (@react-google-maps/api) *(NEW)* |
 | Animations | **Framer Motion** *(NEW)* |
@@ -317,7 +318,7 @@ IoT Data (Wokwi → ThingSpeak)
 | AI — Main Model | Stacking Ensemble: LightGBM + XGBoost + ExtraTrees → CatBoost |
 | AI — EEG | Rule-based EEG threshold classifier |
 | AI — Hallucination | Hybrid rule engine (stress + sleep quality) |
-| AI — Emotion | face-api.js in-browser facial expression recognition *(NEW)* |
+| AI — Emotion | @vladmandic/face-api in-browser facial expression recognition *(NEW)* |
 | AI — Voice NLP | Google Gemini 1.5 Flash (`@google/generative-ai`) *(NEW)* |
 | Hyperparameter Tuning | Optuna (TPESampler, 50 trials/model) |
 | Feature Scaling | RobustScaler (scikit-learn) |
@@ -639,7 +640,7 @@ VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 - 🔌 **Graceful fallback** — works with simulated data if ThingSpeak/Firebase not configured
 
 ### 🆕 New Features Added in v2.0
-- 😊 **Facial Emotion Recognition** — Real-time webcam-based emotion detection using **face-api.js** (TinyFaceDetector + FaceExpressionNet); detects 7 emotions with confidence % shown on the Dashboard
+- 😊 **Facial Emotion Recognition** — Real-time webcam-based emotion detection using the modern **@vladmandic/face-api** (`SSDMobileNetV1` + `FaceExpressionNet`); includes anti-flicker smoothing algorithm and detects 7 emotions with confidence % shown on the Dashboard.
 - 🧬 **3D Animated Brain Model** — Interactive Three.js brain sphere on the Dashboard; colour and distortion level dynamically reflect the AI risk level (LOW=cyan, MEDIUM=amber, HIGH=red)
 - 🗣️ **Gemini AI Voice Assistant** — Full conversational AI (STT → Gemini 1.5 Flash → TTS); empathetic mental health responses + Spotify playlist integration on voice command
 - 📍 **Live Location Page** — Google Maps with custom dark theme and live GPS marker showing real-time patient location
