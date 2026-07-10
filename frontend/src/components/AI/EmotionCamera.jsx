@@ -79,13 +79,13 @@ const EmotionCamera = ({ onEmotionDetected }) => {
   const startDetection = () => {
     console.log("[EmotionCamera] Starting detection interval...");
     intervalRef.current = setInterval(async () => {
-      if (!videoRef.current || !canvasRef.current || !modelsLoaded) {
-          console.log("[EmotionCamera] Waiting for video, canvas, or models to load...", {hasVideo: !!videoRef.current, hasCanvas: !!canvasRef.current, modelsLoaded});
+      if (!videoRef.current || !canvasRef.current || !modelsLoaded || videoRef.current.videoWidth === 0 || videoRef.current.readyState < 2) {
+          console.log("[EmotionCamera] Waiting for video, canvas, or models to load...");
           return;
       }
       try {
         const detections = await faceapi
-          .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
+          .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.3 }))
           .withFaceExpressions();
 
         console.log("[EmotionCamera] Detections found:", detections.length);
