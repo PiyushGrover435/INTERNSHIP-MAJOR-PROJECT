@@ -121,7 +121,7 @@ const VoiceAssistant = ({ hallucinationRisk, hallucinationLevel, voiceMessage, v
       setAssistantText("Thinking...");
 
       try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
         const prompt = `You are a personal mental health AI assistant for a patient using the NeuroWatch system. 
         The patient just said: "${said}". 
         Respond in a highly empathetic, calming, and human-like manner. Keep the response short (under 2 sentences). Do not use medical jargon. Speak directly to them like a caring friend.`;
