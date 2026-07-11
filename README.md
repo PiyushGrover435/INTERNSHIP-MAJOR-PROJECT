@@ -149,11 +149,12 @@ A **real-time, in-browser AI** facial emotion detection system powered by the mo
 
 ### 5. ✨ NEW — Gemini AI-Powered Voice Assistant (Upgraded)
 
-The Voice Assistant was upgraded from a simple TTS/STT system to a **full conversational AI** powered by **Google Gemini 1.5 Flash**.
+The Voice Assistant was upgraded from a simple TTS/STT system to a **full conversational AI** powered by **Google Gemini AI**.
 
 **What's new:**
 - User speech input → transcribed via `SpeechRecognition` (STT)
-- Transcript sent to **Gemini 1.5 Flash** with a mental-health-specific empathetic system prompt
+- Transcript sent to **`gemini-flash-latest`** (Google's newest dynamic endpoint) with a mental-health-specific empathetic system prompt
+- Automatically supports Google's new **`AQ.` Authentication Key format** for enhanced security.
 - Gemini's response is spoken back via `SpeechSynthesis` (TTS)
 - Prefers a calm female voice (Samantha / Victoria / Google UK English Female) if available
 - If the user says "music" or "song", automatically opens a curated **Spotify calming playlist**
