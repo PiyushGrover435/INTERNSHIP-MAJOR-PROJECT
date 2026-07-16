@@ -14,8 +14,6 @@
 - **ESP32** — Simulated WiFi microcontroller (runs virtually inside Wokwi)
 - **MPU6050** — Simulated motion/accelerometer sensor
 - **Potentiometer** — Simulates heart rate & stress values
-- **LCD I2C 16×2** — Simulated on-device display
-- **LED + Buzzer** — Simulated alert outputs
 
 **ThingSpeak Channel Mapping:**
 | Field | Simulated Sensor | Description |

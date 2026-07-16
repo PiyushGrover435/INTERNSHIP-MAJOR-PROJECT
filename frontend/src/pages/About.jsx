@@ -66,9 +66,6 @@ const About = () => (
           { label: 'ESP32', detail: 'Main microcontroller with WiFi capability for cloud upload' },
           { label: 'MPU6050', detail: 'IMU sensor for motion/activity detection via I2C bus' },
           { label: 'Potentiometer', detail: 'Simulates heart rate & stress level inputs (replaces MAX30102)' },
-          { label: 'LCD I2C 16×2', detail: 'Displays live readings and alert status on device' },
-          { label: 'LED Alert', detail: 'Flashes red on HIGH risk detection' },
-          { label: 'Buzzer', detail: 'Audio alert on emergency conditions' },
         ].map(({ label, detail }) => (
           <div key={label} className="flex gap-3 p-3 glass rounded-xl border border-cyber-border">
             <div className="w-1.5 h-1.5 rounded-full bg-cyber-neon mt-2 flex-shrink-0" />
@@ -83,6 +80,7 @@ const About = () => (
         <p className="text-[11px] text-yellow-400">
           ⚠️ <strong>Note:</strong> MAX30102 is NOT used. The potentiometer serves as the analog
           input for simulating heart rate and stress data throughout this project.
+          This is a fully software-based simulation — no physical hardware is deployed.
         </p>
       </div>
     </Section>
